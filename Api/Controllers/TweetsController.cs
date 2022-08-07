@@ -4,113 +4,45 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
 {
-    //[Route("api/v1.0/tweets")]
-    //[ApiController]
-    //public class TweetsController : ControllerBase
-    //{
-
-    //    private List<TweetDto> _tweets = new List<TweetDto> {
-    //            new TweetDto
-    //            {
-    //                Id = Guid.NewGuid().ToString(),
-    //                Text = "Text",
-    //            },
-    //            new TweetDto
-    //            {
-    //                Id = Guid.NewGuid().ToString(),
-    //                Text = "Text 2",
-    //            }};
-
-    //    private readonly IMessageRepository messageRepository;
-
-    //    public TweetsController(IMessageRepository messageRepository)
-    //    {
-    //        this.messageRepository = messageRepository;
-    //    }
-
-    //    [HttpGet("all")]
-    //    public async Task<List<Tweet>> All()
-    //    {
-    //        return await messageRepository.GetAllAsync();
-    //    }
-
-    //    [HttpGet("{username}")]
-    //    public List<TweetDto> All(string username)
-    //    {
-    //        return _tweets;
-    //    }
-
-    //    [HttpPost("{username}/add")]
-    //    public async Task Add(string username, [FromBody] Tweet tweet)
-    //    {
-    //        await messageRepository.CreateAsync(tweet);
-    //    }
-
-    //    [HttpPut("{username}/update/{id}")]
-    //    public void Update(string username, Guid id, [FromBody] Tweet tweet)
-    //    {
-    //        //return _tweets;
-    //    }
-
-    //    [HttpDelete("{username}/delete/{id}")]
-    //    public void Delete(string username, Guid id)
-    //    {
-    //        //return _tweets;
-    //    }
-    //}
-
     [Route("api/v1.0/tweets")]
     [ApiController]
     public class TweetsController : ControllerBase
     {
+        private readonly IMessageRepository messageRepository;
 
-        private List<TweetDto> _tweets = new List<TweetDto> {
-                new TweetDto
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Text = "Text",
-                },
-                new TweetDto
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Text = "Text 2",
-                }};
-
-        private readonly TweeterMessageService _tweeterMessageService;
-
-        public TweetsController(TweeterMessageService tweeterMessageService)
+        public TweetsController(IMessageRepository messageRepository)
         {
-            this._tweeterMessageService = tweeterMessageService;
+            this.messageRepository = messageRepository;
         }
 
         [HttpGet("all")]
-        public async Task<List<Tweet>> All()
+        public async Task<List<Tweet>> All(CancellationToken cancellationToken)
         {
-            return await _tweeterMessageService.GetAsync();
+            return await messageRepository.GetAllAsync(cancellationToken);
         }
 
         [HttpGet("{username}")]
-        public List<TweetDto> All(string username)
+        public async Task<List<Tweet>> All(string username, CancellationToken cancellationToken)
         {
-            return _tweets;
+            return await messageRepository.GetByUsernameAsync(username, cancellationToken);
         }
 
         [HttpPost("{username}/add")]
-        public async Task Add(string username, [FromBody] Tweet tweet)
+        public async Task Add([FromBody] Tweet tweet, string username, CancellationToken cancellationToken)
         {
-            await _tweeterMessageService.CreateAsync(tweet);
+            await messageRepository.CreateAsync(tweet, cancellationToken);
         }
 
         [HttpPut("{username}/update/{id}")]
-        public void Update(string username, Guid id, [FromBody] Tweet tweet)
+        public async Task Update([FromBody] Tweet tweet, string username, string id, CancellationToken cancellationToken)
         {
-            //return _tweets;
+            await messageRepository.EditAsync(tweet, cancellationToken);
         }
 
         [HttpDelete("{username}/delete/{id}")]
-        public void Delete(string username, Guid id)
+        public async Task Delete(string username, string id, CancellationToken cancellationToken)
         {
-            //return _tweets;
+            await messageRepository.DeleteAsync(id, cancellationToken);
         }
     }
 }
