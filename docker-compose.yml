@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+
+  mongodb:
+    image: mongo:latest
+    volumes:
+      - ./mongo/data:/data/db
+    ports:
+      - 8007:27017
+    container_name: tweeter-mongo
+
+  tweeter-messages-api:
+    image: tweeter-messages-api:latest
+    depends_on:
+      - "mongodb"
+    build:
+      context: ./
+      dockerfile: Api/Dockerfile
+    ports:
+      - 8000:80    
+    environment:
+      DB_CONNECTION_STRING: "mongodb://localhost:8007"
+      DB_NAME: "tweeter-messages"
+      ASPNETCORE_ENVIRONMENT: "Development"
