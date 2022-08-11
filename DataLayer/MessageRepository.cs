@@ -46,9 +46,10 @@ namespace DataLayer
                     cancellationToken: cancellationToken);
         }
 
-        public async Task DeleteAsync(string id, CancellationToken cancellationToken)
+        public async Task DeleteAsync(string userName, string id, CancellationToken cancellationToken)
         {
-            FilterDefinition<Tweet> filter = Builders<Tweet>.Filter.Eq(p => p.Id, id);
+            FilterDefinition<Tweet> filter = Builders<Tweet>.Filter
+                .Where(p => p.Id == id && p.UserName == userName);
 
             await _tweetsCollection.DeleteOneAsync(filter, cancellationToken);
         }

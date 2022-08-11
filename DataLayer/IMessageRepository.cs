@@ -6,6 +6,6 @@
         Task<List<Tweet>> GetByUsernameAsync(string username, CancellationToken cancellationToken);
         Task CreateAsync(Tweet tweet, CancellationToken cancellationToken);
         Task EditAsync(Tweet tweet, CancellationToken cancellationToken);
-        Task DeleteAsync(string id, CancellationToken cancellationToken);
+        Task DeleteAsync(string userName, string id, CancellationToken cancellationToken);
     }
 }

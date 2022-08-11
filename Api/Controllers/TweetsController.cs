@@ -1,4 +1,5 @@
 ﻿using Api.Dto;
+using AutoMapper;
 using DataLayer;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,41 +9,55 @@ namespace Api.Controllers
     [ApiController]
     public class TweetsController : ControllerBase
     {
-        private readonly IMessageRepository messageRepository;
+        private readonly IMessageRepository _messageRepository;
+        private readonly IMapper _mapper;
 
-        public TweetsController(IMessageRepository messageRepository)
+        public TweetsController(IMessageRepository messageRepository, IMapper mapper)
         {
-            this.messageRepository = messageRepository;
+            _messageRepository = messageRepository;
+            _mapper = mapper;
         }
 
         [HttpGet("all")]
-        public async Task<List<Tweet>> All(CancellationToken cancellationToken)
+        public async Task<List<TweetDto>> All(CancellationToken cancellationToken)
         {
-            return await messageRepository.GetAllAsync(cancellationToken);
+            return _mapper.Map<List<TweetDto>>(await _messageRepository.GetAllAsync(cancellationToken));
         }
 
         [HttpGet("{username}")]
-        public async Task<List<Tweet>> All(string username, CancellationToken cancellationToken)
+        public async Task<List<TweetDto>> All(string username, CancellationToken cancellationToken)
         {
-            return await messageRepository.GetByUsernameAsync(username, cancellationToken);
+            return _mapper.Map<List<TweetDto>>(await _messageRepository.GetByUsernameAsync(username, cancellationToken));
         }
 
         [HttpPost("{username}/add")]
-        public async Task Add([FromBody] Tweet tweet, string username, CancellationToken cancellationToken)
+        public async Task Add([FromBody] TweetEditDto tweet, string username, CancellationToken cancellationToken)
         {
-            await messageRepository.CreateAsync(tweet, cancellationToken);
+            await _messageRepository.CreateAsync(new Tweet
+            {
+                UserName = username,
+                Text = tweet.Text,
+            },
+            cancellationToken);
         }
 
         [HttpPut("{username}/update/{id}")]
-        public async Task Update([FromBody] Tweet tweet, string username, string id, CancellationToken cancellationToken)
+        public async Task Update([FromBody] TweetEditDto tweet, string username, string id, CancellationToken cancellationToken)
         {
-            await messageRepository.EditAsync(tweet, cancellationToken);
+            await _messageRepository.EditAsync(
+                new Tweet
+                {
+                    Id = id,
+                    UserName = username,
+                    Text = tweet.Text,
+                },
+                cancellationToken);
         }
 
         [HttpDelete("{username}/delete/{id}")]
         public async Task Delete(string username, string id, CancellationToken cancellationToken)
         {
-            await messageRepository.DeleteAsync(id, cancellationToken);
+            await _messageRepository.DeleteAsync(username, id, cancellationToken);
         }
     }
 }
