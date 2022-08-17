@@ -34,7 +34,10 @@ namespace DataLayer
 
         public async Task CreateAsync(Tweet tweet, CancellationToken cancellationToken)
         {
-            await _tweetsCollection.InsertOneAsync(tweet, cancellationToken); ;
+            await _tweetsCollection.InsertOneAsync(
+                tweet,
+                new InsertOneOptions { BypassDocumentValidation = false },
+                cancellationToken);
         }
 
         public async Task EditAsync(Tweet tweet, CancellationToken cancellationToken)
@@ -48,10 +51,7 @@ namespace DataLayer
 
         public async Task DeleteAsync(string userName, string id, CancellationToken cancellationToken)
         {
-            FilterDefinition<Tweet> filter = Builders<Tweet>.Filter
-                .Where(p => p.Id == id && p.UserName == userName);
-
-            await _tweetsCollection.DeleteOneAsync(filter, cancellationToken);
+            await _tweetsCollection.DeleteOneAsync(p => p.Id == id && p.UserName == userName, cancellationToken);
         }
     }
 }
