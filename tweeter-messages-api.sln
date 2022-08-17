@@ -3,14 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "Api\Api.csproj", "{AA5D00C9-C3CD-4A12-A9F6-B85972BCF71F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api", "Api\Api.csproj", "{AA5D00C9-C3CD-4A12-A9F6-B85972BCF71F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{48FD6C47-05B0-48CE-981A-96A62CB3A0BB}"
 	ProjectSection(SolutionItems) = preProject
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataLayer", "DataLayer\DataLayer.csproj", "{7EFC3361-60B3-4AA6-811B-DE805CDE0707}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataLayer", "DataLayer\DataLayer.csproj", "{7EFC3361-60B3-4AA6-811B-DE805CDE0707}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{4B90D6F9-95D5-4F32-BB19-623ECC0235BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +28,10 @@ Global
 		{7EFC3361-60B3-4AA6-811B-DE805CDE0707}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EFC3361-60B3-4AA6-811B-DE805CDE0707}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7EFC3361-60B3-4AA6-811B-DE805CDE0707}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B90D6F9-95D5-4F32-BB19-623ECC0235BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B90D6F9-95D5-4F32-BB19-623ECC0235BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B90D6F9-95D5-4F32-BB19-623ECC0235BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B90D6F9-95D5-4F32-BB19-623ECC0235BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

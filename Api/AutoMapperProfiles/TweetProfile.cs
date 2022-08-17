@@ -3,6 +3,7 @@ using AutoMapper;
 using DataLayer;
 
 namespace AutoMapperProfiles;
+
 public class TweetProfile : Profile
 {
     public TweetProfile()
