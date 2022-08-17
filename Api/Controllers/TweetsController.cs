@@ -27,37 +27,57 @@ namespace Api.Controllers
         [HttpGet("{username}")]
         public async Task<List<TweetDto>> All(string username, CancellationToken cancellationToken)
         {
+            // todo: check the user
             return _mapper.Map<List<TweetDto>>(await _messageRepository.GetByUsernameAsync(username, cancellationToken));
         }
 
         [HttpPost("{username}/add")]
-        public async Task Add([FromBody] TweetEditDto tweet, string username, CancellationToken cancellationToken)
+        public async Task<ActionResult> Add([FromBody] TweetEditDto tweet, string username, CancellationToken cancellationToken)
         {
-            await _messageRepository.CreateAsync(new Tweet
+            // todo: check message lenght and the user
+            var tweetDb = new Tweet
             {
                 UserName = username,
                 Text = tweet.Text,
-            },
-            cancellationToken);
+            };
+
+            await _messageRepository.CreateAsync(tweetDb, cancellationToken);
+
+            return CreatedAtAction(nameof(Add), _mapper.Map<TweetDto>(tweetDb));
         }
 
         [HttpPut("{username}/update/{id}")]
-        public async Task Update([FromBody] TweetEditDto tweet, string username, string id, CancellationToken cancellationToken)
+        public async Task<ActionResult<TweetDto>> Update([FromBody] TweetEditDto tweet, string username, string id, CancellationToken cancellationToken)
         {
-            await _messageRepository.EditAsync(
-                new Tweet
-                {
-                    Id = id,
-                    UserName = username,
-                    Text = tweet.Text,
-                },
-                cancellationToken);
+            // todo: check message lenght and the user
+            var tweetDb = await _messageRepository.GetOneAsync(username, id, cancellationToken);
+
+            if (tweetDb == null)
+            {
+                return NotFound();
+            }
+
+            tweetDb.Text = tweet.Text;
+
+            await _messageRepository.EditAsync(tweetDb, cancellationToken);
+
+            return _mapper.Map<TweetDto>(tweetDb);
         }
 
         [HttpDelete("{username}/delete/{id}")]
-        public async Task Delete(string username, string id, CancellationToken cancellationToken)
+        public async Task<ActionResult> Delete(string username, string id, CancellationToken cancellationToken)
         {
+            // todo: check the user
+            var tweetDb = await _messageRepository.GetOneAsync(username, id, cancellationToken);
+
+            if (tweetDb == null)
+            {
+                return NotFound();
+            }
+
             await _messageRepository.DeleteAsync(username, id, cancellationToken);
+
+            return NoContent();
         }
     }
 }

@@ -32,26 +32,27 @@ namespace DataLayer
             return await _tweetsCollection.Find(filter).ToListAsync(cancellationToken);
         }
 
-        public async Task CreateAsync(Tweet tweet, CancellationToken cancellationToken)
+        public async Task<Tweet> GetOneAsync(string userName, string id, CancellationToken cancellationToken)
         {
+            return await _tweetsCollection
+                .Find(p => p.Id == id && p.UserName == userName)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        public async Task CreateAsync(Tweet tweet, CancellationToken cancellationToken) =>
             await _tweetsCollection.InsertOneAsync(
                 tweet,
                 new InsertOneOptions { BypassDocumentValidation = false },
                 cancellationToken);
-        }
 
-        public async Task EditAsync(Tweet tweet, CancellationToken cancellationToken)
-        {
+        public async Task EditAsync(Tweet tweet, CancellationToken cancellationToken) =>
             await _tweetsCollection
                 .ReplaceOneAsync(
                     filter: g => g.Id == tweet.Id,
                     replacement: tweet,
                     cancellationToken: cancellationToken);
-        }
 
-        public async Task DeleteAsync(string userName, string id, CancellationToken cancellationToken)
-        {
+        public async Task DeleteAsync(string userName, string id, CancellationToken cancellationToken) =>
             await _tweetsCollection.DeleteOneAsync(p => p.Id == id && p.UserName == userName, cancellationToken);
-        }
     }
 }
