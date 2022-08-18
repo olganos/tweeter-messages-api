@@ -9,7 +9,7 @@ using Moq;
 namespace UnitTests
 {
     [TestFixture]
-    public class TweetsControllerTests
+    internal class TweetsControllerTests
     {
         private TweetsController _tweetsController;
         private Mock<IMessageRepository> _mockedRepository;
