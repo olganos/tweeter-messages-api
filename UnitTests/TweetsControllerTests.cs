@@ -3,6 +3,7 @@ using Api.Dto;
 using AutoMapper;
 using AutoMapperProfiles;
 using DataLayer;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 
 namespace UnitTests
@@ -31,52 +32,98 @@ namespace UnitTests
         [Test]
         public async Task GetAll_RequestList_ReturnList()
         {
-            var cancellationToken = new CancellationToken();
-
-            _mockedRepository.Setup(repo => repo.GetAllAsync(cancellationToken))
+            _mockedRepository.Setup(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()))
                .ReturnsAsync(FullTweetsList);
 
-            var tweetsResult = await _tweetsController.All(cancellationToken);
+            var tweetsResult = await _tweetsController.All(It.IsAny<CancellationToken>());
 
-            Assert.That(tweetsResult.Count, Is.EqualTo(2));
+            Assert.That(tweetsResult, Has.Count.EqualTo(2));
             Assert.That(tweetsResult, Is.InstanceOf(typeof(List<TweetDto>)));
         }
-
 
         [Test]
         public async Task GetAll_RequestListByUserName_ReturnList()
         {
-            var cancellationToken = new CancellationToken();
             var userName = "userName1";
 
-            _mockedRepository.Setup(repo => repo.GetByUsernameAsync(userName, cancellationToken))
+            _mockedRepository.Setup(repo => repo.GetByUsernameAsync(userName, It.IsAny<CancellationToken>()))
                .ReturnsAsync(FullTweetsList.Where(x => x.UserName == userName).ToList());
 
-            var tweetsResult = await _tweetsController.All(userName, cancellationToken);
+            var tweetsResult = await _tweetsController.All(userName, It.IsAny<CancellationToken>());
 
-            Assert.That(tweetsResult.Count, Is.EqualTo(1));
+            Assert.That(tweetsResult, Has.Count.EqualTo(1));
             Assert.That(tweetsResult, Is.InstanceOf(typeof(List<TweetDto>)));
         }
 
         [Test]
         public async Task GetAll_RequestListByWrongUserName_ReturNothing()
         {
-            var cancellationToken = new CancellationToken();
             var userName = "userName3";
 
-            _mockedRepository.Setup(repo => repo.GetByUsernameAsync(userName, cancellationToken))
+            _mockedRepository.Setup(repo => repo.GetByUsernameAsync(userName, It.IsAny<CancellationToken>()))
                .ReturnsAsync(FullTweetsList.Where(x => x.UserName == userName).ToList());
 
-            var tweetsResult = await _tweetsController.All(userName, cancellationToken);
+            var tweetsResult = await _tweetsController.All(userName, It.IsAny<CancellationToken>());
 
-            Assert.That(tweetsResult.Count, Is.EqualTo(0));
+            Assert.That(tweetsResult, Is.Empty);
             Assert.That(tweetsResult, Is.InstanceOf(typeof(List<TweetDto>)));
         }
 
         #endregion
 
+        #region Create test
+
+        [Test]
+        public async Task Add_CreateCorrectTweet_ReturnNew()
+        {
+            var id = "62f55d7d3925e583c4cc737a";
+            var username = "username";
+            var text = "New message";
+
+            _mockedRepository.Setup(repo => repo.CreateAsync(It.IsAny<Tweet>(), It.IsAny<CancellationToken>()))
+               .Callback<Tweet, CancellationToken>((newTweet, cancellationToken) =>
+               {
+                   newTweet.Id = id;
+               });
+
+            var addResult = await _tweetsController.Add(
+                new TweetEditDto
+                {
+                    Text = text
+                },
+                username,
+                It.IsAny<CancellationToken>());
+
+            Assert.That(addResult, Is.InstanceOf(typeof(ActionResult<TweetDto>)));
+            Assert.That(addResult.Result, Is.InstanceOf(typeof(CreatedAtActionResult)));
+
+            var actualTweet = (addResult.Result as CreatedAtActionResult).Value as TweetDto;
+            Assert.Multiple(() =>
+            {
+                Assert.That(actualTweet.Id, Is.EqualTo(id));
+                Assert.That(actualTweet.Text, Is.EqualTo(text));
+                Assert.That(actualTweet.UserName, Is.EqualTo(username));
+            });
+        }
+
+        [Test]
+        public async Task Add_Create_144_CharactersMessage_BadRequest()
+        {
+            _tweetsController.ModelState.AddModelError("Text", "Not longer than 144 characters");
+
+            var addResult = await _tweetsController.Add(
+                It.IsAny<TweetEditDto>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>());
+
+            Assert.That(addResult, Is.InstanceOf(typeof(ActionResult<TweetDto>)));
+            Assert.That(addResult.Result, Is.InstanceOf(typeof(BadRequestObjectResult)));
+        }
+
+        #endregion
+
         private List<Tweet> FullTweetsList =>
-            new List<Tweet>
+            new()
             {
                 new Tweet
                 {
@@ -93,7 +140,7 @@ namespace UnitTests
             };
 
         private List<TweetDto> FullTweetsDtoList =>
-            new List<TweetDto>
+            new()
             {
                 new TweetDto
                 {
