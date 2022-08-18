@@ -32,9 +32,15 @@ namespace Api.Controllers
         }
 
         [HttpPost("{username}/add")]
-        public async Task<ActionResult> Add([FromBody] TweetEditDto tweet, string username, CancellationToken cancellationToken)
+        public async Task<ActionResult<TweetDto>> Add([FromBody] TweetEditDto tweet, string username, CancellationToken cancellationToken)
         {
-            // todo: check message lenght and the user
+            // todo: check the user
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var tweetDb = new Tweet
             {
                 UserName = username,
@@ -49,7 +55,12 @@ namespace Api.Controllers
         [HttpPut("{username}/update/{id}")]
         public async Task<ActionResult<TweetDto>> Update([FromBody] TweetEditDto tweet, string username, string id, CancellationToken cancellationToken)
         {
-            // todo: check message lenght and the user
+            // todo: check he user
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var tweetDb = await _messageRepository.GetOneAsync(username, id, cancellationToken);
 
             if (tweetDb == null)
