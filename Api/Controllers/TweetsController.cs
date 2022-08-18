@@ -32,7 +32,10 @@ namespace Api.Controllers
         }
 
         [HttpPost("{username}/add")]
-        public async Task<ActionResult<TweetDto>> Add([FromBody] TweetEditDto tweet, string username, CancellationToken cancellationToken)
+        public async Task<ActionResult<TweetDto>> Add(
+            [FromBody] TweetEditDto tweet,
+            string username,
+            CancellationToken cancellationToken)
         {
             // todo: check the user
 
@@ -53,7 +56,11 @@ namespace Api.Controllers
         }
 
         [HttpPut("{username}/update/{id}")]
-        public async Task<ActionResult<TweetDto>> Update([FromBody] TweetEditDto tweet, string username, string id, CancellationToken cancellationToken)
+        public async Task<ActionResult<TweetDto>> Update(
+            [FromBody] TweetEditDto tweet,
+            string username,
+            string id,
+            CancellationToken cancellationToken)
         {
             // todo: check he user
             if (!ModelState.IsValid)
@@ -88,7 +95,7 @@ namespace Api.Controllers
 
             await _messageRepository.DeleteAsync(username, id, cancellationToken);
 
-            return NoContent();
+            return Ok();
         }
     }
 }

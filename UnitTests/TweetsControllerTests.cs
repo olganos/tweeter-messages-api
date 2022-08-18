@@ -71,7 +71,7 @@ namespace UnitTests
 
         #endregion
 
-        #region Create test
+        #region Create tests
 
         [Test]
         public async Task Add_CreateCorrectTweet_ReturnNew()
@@ -118,6 +118,115 @@ namespace UnitTests
 
             Assert.That(addResult, Is.InstanceOf(typeof(ActionResult<TweetDto>)));
             Assert.That(addResult.Result, Is.InstanceOf(typeof(BadRequestObjectResult)));
+        }
+
+        #endregion
+
+        #region Update tests
+
+        [Test]
+        public async Task Update_UpdateCorrectTweet_ReturnUpdated()
+        {
+            var id = "62f55d7d3925e583c4cc737a";
+            var username = "username";
+
+            _mockedRepository.Setup(repo => repo.GetOneAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+               .ReturnsAsync(new Tweet
+               {
+                   Id = id,
+                   UserName = username,
+               });
+
+            _mockedRepository.Setup(repo => repo.EditAsync(It.IsAny<Tweet>(), It.IsAny<CancellationToken>()));
+
+
+            var text = "New message";
+
+            var addResult = await _tweetsController.Update(
+                new TweetEditDto
+                {
+                    Text = text
+                },
+                username,
+                id,
+                It.IsAny<CancellationToken>());
+
+            Assert.That(addResult, Is.InstanceOf(typeof(ActionResult<TweetDto>)));
+
+            var actualTweet = addResult.Value;
+            Assert.Multiple(() =>
+            {
+                Assert.That(actualTweet.Id, Is.EqualTo(id));
+                Assert.That(actualTweet.Text, Is.EqualTo(text));
+                Assert.That(actualTweet.UserName, Is.EqualTo(username));
+            });
+        }
+
+        [Test]
+        public async Task Update_Create_144_CharactersMessage_BadRequest()
+        {
+            _tweetsController.ModelState.AddModelError("Text", "Not longer than 144 characters");
+
+            var addResult = await _tweetsController.Update(
+                It.IsAny<TweetEditDto>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>());
+
+            Assert.That(addResult, Is.InstanceOf(typeof(ActionResult<TweetDto>)));
+            Assert.That(addResult.Result, Is.InstanceOf(typeof(BadRequestObjectResult)));
+        }
+
+        [Test]
+        public async Task Update_TweetDoesntExist_NotFound()
+        {
+            _mockedRepository.Setup(repo => repo.GetOneAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+
+            var addResult = await _tweetsController.Update(
+                It.IsAny<TweetEditDto>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>());
+
+            Assert.That(addResult, Is.InstanceOf(typeof(ActionResult<TweetDto>)));
+            Assert.That(addResult.Result, Is.InstanceOf(typeof(NotFoundResult)));
+        }
+
+        #endregion
+
+        #region Delete tests
+
+        [Test]
+        public async Task Delete_DeleteCorrectly_ReturnOk()
+        {
+            _mockedRepository
+                .Setup(repo => repo
+                    .GetOneAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Tweet());
+
+            _mockedRepository
+                .Setup(repo => repo
+                    .DeleteAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+
+            var addResult = await _tweetsController.Delete(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>());
+
+            Assert.That(addResult, Is.InstanceOf(typeof(OkResult)));
+        }
+
+        [Test]
+        public async Task Delete_TweetDoesntExist_NotFound()
+        {
+            _mockedRepository.Setup(repo => repo.GetOneAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+
+            var addResult = await _tweetsController.Delete(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>());
+
+            Assert.That(addResult, Is.InstanceOf(typeof(NotFoundResult)));
         }
 
         #endregion
