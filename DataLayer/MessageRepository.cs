@@ -38,6 +38,12 @@ namespace DataLayer
                 .Find(p => p.Id == id && p.UserName == userName)
                 .FirstOrDefaultAsync(cancellationToken);
         }
+        public async Task<Tweet> GetOneAsync(string id, CancellationToken cancellationToken)
+        {
+            return await _tweetsCollection
+                .Find(p => p.Id == id)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
 
         public async Task CreateAsync(Tweet tweet, CancellationToken cancellationToken) =>
             await _tweetsCollection.InsertOneAsync(

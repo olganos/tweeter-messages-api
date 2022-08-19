@@ -97,5 +97,41 @@ namespace Api.Controllers
 
             return Ok();
         }
+
+        [HttpPost("{username}/reply/{id}")]
+        public async Task<ActionResult<TweetDto>> Reply(
+            [FromBody] TweetEditDto tweet,
+            string username,
+            string id,
+            CancellationToken cancellationToken)
+        {
+            // todo: check the user
+            var tweetDb = await _messageRepository.GetOneAsync(id, cancellationToken);
+
+            if (tweetDb == null)
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (tweetDb.Replies == null)
+            {
+                tweetDb.Replies = new List<Reply>();
+            }
+
+            tweetDb.Replies.Add(new Reply
+            {
+                Text = tweet.Text,
+                UserName = username,
+            });
+
+            await _messageRepository.EditAsync(tweetDb, cancellationToken);
+
+            return CreatedAtAction(nameof(Add), _mapper.Map<TweetDto>(tweetDb));
+        }
     }
 }
