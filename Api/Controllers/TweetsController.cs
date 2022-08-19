@@ -21,7 +21,8 @@ namespace Api.Controllers
         [HttpGet("all")]
         public async Task<List<TweetDto>> All(CancellationToken cancellationToken)
         {
-            return _mapper.Map<List<TweetDto>>(await _messageRepository.GetAllAsync(cancellationToken));
+            var t = await _messageRepository.GetAllAsync(cancellationToken);
+            return _mapper.Map<List<TweetDto>>(t);
         }
 
         [HttpGet("{username}")]
@@ -106,16 +107,16 @@ namespace Api.Controllers
             CancellationToken cancellationToken)
         {
             // todo: check the user
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var tweetDb = await _messageRepository.GetOneAsync(id, cancellationToken);
 
             if (tweetDb == null)
             {
                 return NotFound();
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
             }
 
             if (tweetDb.Replies == null)
@@ -131,7 +132,9 @@ namespace Api.Controllers
 
             await _messageRepository.EditAsync(tweetDb, cancellationToken);
 
-            return CreatedAtAction(nameof(Add), _mapper.Map<TweetDto>(tweetDb));
+            // todo: not sure that its ok to return the whole tweet
+            // because it coul be really huge
+            return CreatedAtAction(nameof(Reply), _mapper.Map<TweetDto>(tweetDb));
         }
     }
 }

@@ -38,7 +38,7 @@ namespace UnitTests
             var tweetsResult = await _tweetsController.All(It.IsAny<CancellationToken>());
 
             Assert.That(tweetsResult, Has.Count.EqualTo(2));
-            Assert.That(tweetsResult, Is.InstanceOf(typeof(List<TweetDto>)));
+            Assert.That(tweetsResult, Is.TypeOf(typeof(List<TweetDto>)));
         }
 
         [Test]
@@ -52,7 +52,7 @@ namespace UnitTests
             var tweetsResult = await _tweetsController.All(userName, It.IsAny<CancellationToken>());
 
             Assert.That(tweetsResult, Has.Count.EqualTo(1));
-            Assert.That(tweetsResult, Is.InstanceOf(typeof(List<TweetDto>)));
+            Assert.That(tweetsResult, Is.TypeOf(typeof(List<TweetDto>)));
         }
 
         [Test]
@@ -66,7 +66,7 @@ namespace UnitTests
             var tweetsResult = await _tweetsController.All(userName, It.IsAny<CancellationToken>());
 
             Assert.That(tweetsResult, Is.Empty);
-            Assert.That(tweetsResult, Is.InstanceOf(typeof(List<TweetDto>)));
+            Assert.That(tweetsResult, Is.TypeOf(typeof(List<TweetDto>)));
         }
 
         #endregion
@@ -94,8 +94,8 @@ namespace UnitTests
                 username,
                 It.IsAny<CancellationToken>());
 
-            Assert.That(addResult, Is.InstanceOf(typeof(ActionResult<TweetDto>)));
-            Assert.That(addResult.Result, Is.InstanceOf(typeof(CreatedAtActionResult)));
+            Assert.That(addResult, Is.TypeOf(typeof(ActionResult<TweetDto>)));
+            Assert.That(addResult.Result, Is.TypeOf(typeof(CreatedAtActionResult)));
 
             var actualTweet = (addResult.Result as CreatedAtActionResult).Value as TweetDto;
             Assert.Multiple(() =>
@@ -116,8 +116,8 @@ namespace UnitTests
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>());
 
-            Assert.That(addResult, Is.InstanceOf(typeof(ActionResult<TweetDto>)));
-            Assert.That(addResult.Result, Is.InstanceOf(typeof(BadRequestObjectResult)));
+            Assert.That(addResult, Is.TypeOf(typeof(ActionResult<TweetDto>)));
+            Assert.That(addResult.Result, Is.TypeOf(typeof(BadRequestObjectResult)));
         }
 
         #endregion
@@ -139,7 +139,6 @@ namespace UnitTests
 
             _mockedRepository.Setup(repo => repo.EditAsync(It.IsAny<Tweet>(), It.IsAny<CancellationToken>()));
 
-
             var text = "New message";
 
             var addResult = await _tweetsController.Update(
@@ -151,7 +150,7 @@ namespace UnitTests
                 id,
                 It.IsAny<CancellationToken>());
 
-            Assert.That(addResult, Is.InstanceOf(typeof(ActionResult<TweetDto>)));
+            Assert.That(addResult, Is.TypeOf(typeof(ActionResult<TweetDto>)));
 
             var actualTweet = addResult.Value;
             Assert.Multiple(() =>
@@ -173,8 +172,8 @@ namespace UnitTests
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>());
 
-            Assert.That(addResult, Is.InstanceOf(typeof(ActionResult<TweetDto>)));
-            Assert.That(addResult.Result, Is.InstanceOf(typeof(BadRequestObjectResult)));
+            Assert.That(addResult, Is.TypeOf(typeof(ActionResult<TweetDto>)));
+            Assert.That(addResult.Result, Is.TypeOf(typeof(BadRequestObjectResult)));
         }
 
         [Test]
@@ -188,8 +187,8 @@ namespace UnitTests
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>());
 
-            Assert.That(addResult, Is.InstanceOf(typeof(ActionResult<TweetDto>)));
-            Assert.That(addResult.Result, Is.InstanceOf(typeof(NotFoundResult)));
+            Assert.That(addResult, Is.TypeOf(typeof(ActionResult<TweetDto>)));
+            Assert.That(addResult.Result, Is.TypeOf(typeof(NotFoundResult)));
         }
 
         #endregion
@@ -213,7 +212,7 @@ namespace UnitTests
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>());
 
-            Assert.That(addResult, Is.InstanceOf(typeof(OkResult)));
+            Assert.That(addResult, Is.TypeOf(typeof(OkResult)));
         }
 
         [Test]
@@ -226,7 +225,61 @@ namespace UnitTests
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>());
 
-            Assert.That(addResult, Is.InstanceOf(typeof(NotFoundResult)));
+            Assert.That(addResult, Is.TypeOf(typeof(NotFoundResult)));
+        }
+
+        #endregion
+
+        #region Replies
+
+        [Test]
+        public async Task Reply_AddToNonexistingTweet_NotFound()
+        {
+            _mockedRepository.Setup(repo => repo.GetOneAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+
+            var addResult = await _tweetsController.Reply(
+                It.IsAny<TweetEditDto>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>());
+
+            Assert.That(addResult, Is.TypeOf(typeof(ActionResult<TweetDto>)));
+            Assert.That(addResult.Result, Is.TypeOf(typeof(NotFoundResult)));
+        }
+
+        [Test]
+        public async Task Reply_Add_144_CharactersMessage_BadRequest()
+        {
+            _tweetsController.ModelState.AddModelError("Text", "Not longer than 144 characters");
+
+            var addResult = await _tweetsController.Reply(
+                It.IsAny<TweetEditDto>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>());
+
+            Assert.That(addResult, Is.TypeOf(typeof(ActionResult<TweetDto>)));
+            Assert.That(addResult.Result, Is.TypeOf(typeof(BadRequestObjectResult)));
+        }
+
+        [Test]
+        public async Task Reply_AddNew_Return201()
+        {
+            _mockedRepository
+                .Setup(repo => repo
+                    .GetOneAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Tweet());
+
+            _mockedRepository.Setup(repo => repo.EditAsync(It.IsAny<Tweet>(), It.IsAny<CancellationToken>()));
+
+            var addResult = await _tweetsController.Reply(
+                new TweetEditDto(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>());
+
+            Assert.That(addResult, Is.TypeOf(typeof(ActionResult<TweetDto>)));
+            Assert.That(addResult.Result, Is.TypeOf(typeof(CreatedAtActionResult)));
         }
 
         #endregion
