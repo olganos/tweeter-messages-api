@@ -1,8 +1,8 @@
 using Confluent.Kafka;
 using Core;
-using DataLayer;
 using Infrastructure.Handlers;
 using Infrastructure.Producers;
+using Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
