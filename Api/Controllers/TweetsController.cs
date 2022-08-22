@@ -1,5 +1,6 @@
 ﻿using Api.Dto;
 using AutoMapper;
+using Core;
 using DataLayer;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,11 +11,16 @@ namespace Api.Controllers
     public class TweetsController : ControllerBase
     {
         private readonly IMessageRepository _messageRepository;
+        private readonly IProducer _produser;
         private readonly IMapper _mapper;
 
-        public TweetsController(IMessageRepository messageRepository, IMapper mapper)
+        public TweetsController(
+            IMessageRepository messageRepository,
+            IProducer produser,
+            IMapper mapper)
         {
             _messageRepository = messageRepository;
+            _produser = produser;
             _mapper = mapper;
         }
 
@@ -50,6 +56,10 @@ namespace Api.Controllers
                 UserName = username,
                 Text = tweet.Text,
             };
+
+            // todo: create a separate class, a kind of EventSender
+            //await _produser.ProduceAsync<Tweet>(Environment.GetEnvironmentVariable("KAFKA_NEW_TWEET_TOPIC"), tweetDb);
+            await _produser.ProduceAsync<Tweet>("tweet_topic", tweetDb);
 
             await _messageRepository.CreateAsync(tweetDb, cancellationToken);
 
