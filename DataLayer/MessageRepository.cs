@@ -8,18 +8,11 @@ namespace DataLayer
     {
         private readonly IMongoCollection<Tweet> _tweetsCollection;
 
-        public MessageRepository()
+        public MessageRepository(string connectionString, string databaseName, string tweetCollectionName)
         {
-            var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
-            var databaseName = Environment.GetEnvironmentVariable("DB_NAME");
-
-            var client = new MongoClient(connectionString
-                ?? "mongodb://localhost:8007/?readPreference=primary&ssl=false");
-
-            var database = client.GetDatabase(databaseName
-                ?? "tweeter-messages");
-
-            _tweetsCollection = database.GetCollection<Tweet>("tweet");
+            var client = new MongoClient(connectionString);
+            var database = client.GetDatabase(databaseName);
+            _tweetsCollection = database.GetCollection<Tweet>(tweetCollectionName);
         }
 
         public async Task<List<Tweet>> GetAllAsync(CancellationToken cancellationToken)

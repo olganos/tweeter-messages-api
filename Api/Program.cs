@@ -7,7 +7,14 @@ using Infrastructure.Producers;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddSingleton<IMessageRepository, MessageRepository>();
+builder.Services.AddSingleton<IMessageRepository>(sp => new MessageRepository(
+    Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
+        ?? builder.Configuration.GetValue<string>("MongoDbSettings:ConnectionString"),
+    Environment.GetEnvironmentVariable("DB_NAME")
+        ?? builder.Configuration.GetValue<string>("MongoDbSettings:DbName"),
+    Environment.GetEnvironmentVariable("DB_TWEET_COLLECTION")
+        ?? builder.Configuration.GetValue<string>("MongoDbSettings:DbTweetCollectionName")
+));
 
 builder.Services.AddScoped<ITweetProducer>(sp => new KafkaProduser(new ProducerConfig
 {
