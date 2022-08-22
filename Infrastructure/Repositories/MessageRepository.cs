@@ -2,7 +2,7 @@
 using Core.Entities;
 using MongoDB.Driver;
 
-namespace DataLayer
+namespace Infrastructure.Repositories
 {
     public class MessageRepository : IMessageRepository
     {
