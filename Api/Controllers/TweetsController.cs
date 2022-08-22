@@ -4,6 +4,7 @@ using Core;
 using Core.Commands;
 using Core.Entities;
 using DataLayer;
+using Infrastructure.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -12,7 +13,6 @@ namespace Api.Controllers
     [ApiController]
     public class TweetsController : ControllerBase
     {
-        private readonly IMessageRepository _messageRepository;
         private readonly ITweetCommandHandler _handler;
         private readonly IMapper _mapper;
 
@@ -21,24 +21,23 @@ namespace Api.Controllers
             ITweetCommandHandler handler,
             IMapper mapper)
         {
-            _messageRepository = messageRepository;
             _handler = handler;
             _mapper = mapper;
         }
 
-        [HttpGet("all")]
-        public async Task<List<TweetDto>> All(CancellationToken cancellationToken)
-        {
-            var t = await _messageRepository.GetAllAsync(cancellationToken);
-            return _mapper.Map<List<TweetDto>>(t);
-        }
+        //[HttpGet("all")]
+        //public async Task<List<TweetDto>> All(CancellationToken cancellationToken)
+        //{
+        //    var t = await _messageRepository.GetAllAsync(cancellationToken);
+        //    return _mapper.Map<List<TweetDto>>(t);
+        //}
 
-        [HttpGet("{username}")]
-        public async Task<List<TweetDto>> All(string username, CancellationToken cancellationToken)
-        {
-            // todo: check the user
-            return _mapper.Map<List<TweetDto>>(await _messageRepository.GetByUsernameAsync(username, cancellationToken));
-        }
+        //[HttpGet("{username}")]
+        //public async Task<List<TweetDto>> All(string username, CancellationToken cancellationToken)
+        //{
+        //    // todo: check the user
+        //    return _mapper.Map<List<TweetDto>>(await _messageRepository.GetByUsernameAsync(username, cancellationToken));
+        //}
 
         [HttpPost("{username}/add")]
         public async Task<ActionResult<TweetDto>> Add(
@@ -47,7 +46,6 @@ namespace Api.Controllers
             CancellationToken cancellationToken)
         {
             // todo: check the user
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -71,38 +69,49 @@ namespace Api.Controllers
             string id,
             CancellationToken cancellationToken)
         {
-            // todo: check he user
+            // todo: check the user
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var tweetDb = await _messageRepository.GetOneAsync(username, id, cancellationToken);
+            var updateTweetCommand = new UpdateTweetCommand
+            {
+                UserName = username,
+                Text = tweet.Text,
+                TweetId = id
+            };
 
-            if (tweetDb == null)
+            try
+            {
+                await _handler.SendCommandAsync(updateTweetCommand, cancellationToken);
+            }
+            catch (TweetNotFoundExeption)
             {
                 return NotFound();
             }
 
-            tweetDb.Text = tweet.Text;
-
-            await _messageRepository.EditAsync(tweetDb, cancellationToken);
-
-            return _mapper.Map<TweetDto>(tweetDb);
+            return _mapper.Map<TweetDto>(updateTweetCommand);
         }
 
         [HttpDelete("{username}/delete/{id}")]
         public async Task<ActionResult> Delete(string username, string id, CancellationToken cancellationToken)
         {
             // todo: check the user
-            var tweetDb = await _messageRepository.GetOneAsync(username, id, cancellationToken);
+            var deleteTweetCommand = new DeleteTweetCommand
+            {
+                UserName = username,
+                TweetId = id
+            };
 
-            if (tweetDb == null)
+            try
+            {
+                await _handler.SendCommandAsync(deleteTweetCommand, cancellationToken);
+            }
+            catch (TweetNotFoundExeption)
             {
                 return NotFound();
             }
-
-            await _messageRepository.DeleteAsync(username, id, cancellationToken);
 
             return Ok();
         }
@@ -120,29 +129,25 @@ namespace Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var tweetDb = await _messageRepository.GetOneAsync(id, cancellationToken);
+            var addReplyCommand = new AddReplyCommand
+            {
+                UserName = username,
+                Text = tweet.Text,
+                TweetId = id
+            };
 
-            if (tweetDb == null)
+            try
+            {
+                await _handler.SendCommandAsync(addReplyCommand, cancellationToken);
+            }
+            catch (TweetNotFoundExeption)
             {
                 return NotFound();
             }
 
-            if (tweetDb.Replies == null)
-            {
-                tweetDb.Replies = new List<Reply>();
-            }
-
-            tweetDb.Replies.Add(new Reply
-            {
-                Text = tweet.Text,
-                UserName = username,
-            });
-
-            await _messageRepository.EditAsync(tweetDb, cancellationToken);
-
             // todo: not sure that its ok to return the whole tweet
             // because it coul be really huge
-            return CreatedAtAction(nameof(Reply), _mapper.Map<TweetDto>(tweetDb));
+            return CreatedAtAction(nameof(Reply), _mapper.Map<TweetDto>(addReplyCommand));
         }
     }
 }

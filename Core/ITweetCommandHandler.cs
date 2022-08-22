@@ -6,5 +6,7 @@ namespace Core
     {
         Task SendCommandAsync(CreateTweetCommand command, CancellationToken cancellationToken);
         Task SendCommandAsync(AddReplyCommand command, CancellationToken cancellationToken);
+        Task SendCommandAsync(UpdateTweetCommand command, CancellationToken cancellationToken);
+        Task SendCommandAsync(DeleteTweetCommand command, CancellationToken cancellationToken);
     }
 }

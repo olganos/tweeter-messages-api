@@ -19,5 +19,14 @@ public class TweetProfile : Profile
 
         CreateMap<TweetDto, CreateTweetCommand>()
             .ReverseMap();
+
+        CreateMap<TweetDto, AddReplyCommand>()
+           .ReverseMap();
+
+        CreateMap<TweetDto, UpdateTweetCommand>()
+           .ReverseMap();
+
+        CreateMap<TweetDto, DeleteTweetCommand>()
+           .ReverseMap();
     }
 }
