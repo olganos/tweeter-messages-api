@@ -11,8 +11,8 @@ public class TweetProfile : Profile
     public TweetProfile()
     {
         AllowNullCollections = true;
-        //CreateMap<Tweet, TweetDto>()
-        //    .ReverseMap();
+        CreateMap<Tweet, TweetDto>()
+            .ReverseMap();
 
         CreateMap<Reply, ReplyDto>()
             .ReverseMap();
