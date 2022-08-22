@@ -2,8 +2,6 @@
 using AutoMapper;
 using Core;
 using Core.Commands;
-using Core.Entities;
-using DataLayer;
 using Infrastructure.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,27 +15,12 @@ namespace Api.Controllers
         private readonly IMapper _mapper;
 
         public TweetsController(
-            IMessageRepository messageRepository,
             ITweetCommandHandler handler,
             IMapper mapper)
         {
             _handler = handler;
             _mapper = mapper;
         }
-
-        //[HttpGet("all")]
-        //public async Task<List<TweetDto>> All(CancellationToken cancellationToken)
-        //{
-        //    var t = await _messageRepository.GetAllAsync(cancellationToken);
-        //    return _mapper.Map<List<TweetDto>>(t);
-        //}
-
-        //[HttpGet("{username}")]
-        //public async Task<List<TweetDto>> All(string username, CancellationToken cancellationToken)
-        //{
-        //    // todo: check the user
-        //    return _mapper.Map<List<TweetDto>>(await _messageRepository.GetByUsernameAsync(username, cancellationToken));
-        //}
 
         [HttpPost("{username}/add")]
         public async Task<ActionResult<TweetDto>> Add(
