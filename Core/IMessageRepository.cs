@@ -1,4 +1,6 @@
-﻿namespace DataLayer
+﻿using Core.Entities;
+
+namespace Core
 {
     public interface IMessageRepository
     {

@@ -1,4 +1,6 @@
-﻿using MongoDB.Driver;
+﻿using Core;
+using Core.Entities;
+using MongoDB.Driver;
 
 namespace DataLayer
 {

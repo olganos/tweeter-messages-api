@@ -25,8 +25,9 @@ services:
     environment:
       DB_CONNECTION_STRING: mongodb://tweeter-mongodb:27017
       DB_NAME: tweeter-messages
-      KAFKA_SERVER: localhost:9092
-      KAFKA_NEW_TWEET_TOPIC: "NewTweet"
+      KAFKA_SERVER: kafka-server:29092
+      KAFKA_CREATE_TWEET_TOPIC_NAME: "CreateTweet"
+      KAFKA_ADD_REPLY_TOPIC_NAME: "AddReply"
       ASPNETCORE_ENVIRONMENT: Development
 
   zookeeper-server:
@@ -71,14 +72,14 @@ services:
     command: |
       "
       # blocks until kafka is reachable
-      kafka-topics --bootstrap-server kafka-server:29092 --list
+      kafka-topics.sh --bootstrap-server kafka-server:29092 --list
 
       echo -e 'Creating kafka topics'
-      kafka-topics.sh --bootstrap-server kafka-server:29092 --create --if-not-exists --topic createTweet --replication-factor 1 --partitions 1
-      kafka-topics.sh --bootstrap-server kafka-server:29092 --create --if-not-exists --topic addReply --replication-factor 1 --partitions 1
+      kafka-topics.sh --bootstrap-server kafka-server:29092 --create --if-not-exists --topic CreateTweet --replication-factor 1 --partitions 1
+      kafka-topics.sh --bootstrap-server kafka-server:29092 --create --if-not-exists --topic AddReply --replication-factor 1 --partitions 1
 
       echo -e 'Successfully created the following topics:'
-      kafka-topics --bootstrap-server kafka-server:29092 --list
+      kafka-topics.sh --bootstrap-server kafka-server:29092 --list
       "
 
   # todo: I copied it from an example and I leaved it just because I was afraid to delete

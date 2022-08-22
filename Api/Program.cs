@@ -1,19 +1,35 @@
+using Confluent.Kafka;
 using Core;
 using DataLayer;
-using Infrastructure;
+using Infrastructure.Handlers;
+using Infrastructure.Producers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//// Add services to the container.
+// Add services to the container.
 builder.Services.AddSingleton<IMessageRepository, MessageRepository>();
-builder.Services.AddSingleton<IProducer, KafkaProduser>();
+
+builder.Services.AddScoped<ITweetProducer>(sp => new KafkaProduser(new ProducerConfig
+{
+    BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_SERVER")
+        ?? builder.Configuration.GetValue<string>("KafkaSettings:BootstrapServers"),
+}));
+
+builder.Services.AddSingleton(new CommandHandlerConfig(
+    Environment.GetEnvironmentVariable("KAFKA_CREATE_TWEET_TOPIC_NAME")
+        ?? builder.Configuration.GetValue<string>("KafkaSettings:CreateTweetTopicName"),
+    Environment.GetEnvironmentVariable("KAFKA_ADD_REPLY_TOPIC_NAME")
+        ?? builder.Configuration.GetValue<string>("KafkaSettings:AddRealyTopicName")
+));
+
+builder.Services.AddScoped<ITweetCommandHandler, TweetCommandHandler>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddAutoMapper(typeof(Program)); 
+builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 

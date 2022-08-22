@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace DataLayer
+namespace Core.Entities
 {
     public class Tweet
     {

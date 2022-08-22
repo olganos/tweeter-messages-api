@@ -1,6 +1,8 @@
 ﻿using Api.Dto;
 using AutoMapper;
 using Core;
+using Core.Commands;
+using Core.Entities;
 using DataLayer;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,16 +13,16 @@ namespace Api.Controllers
     public class TweetsController : ControllerBase
     {
         private readonly IMessageRepository _messageRepository;
-        private readonly IProducer _produser;
+        private readonly ITweetCommandHandler _handler;
         private readonly IMapper _mapper;
 
         public TweetsController(
             IMessageRepository messageRepository,
-            IProducer produser,
+            ITweetCommandHandler handler,
             IMapper mapper)
         {
             _messageRepository = messageRepository;
-            _produser = produser;
+            _handler = handler;
             _mapper = mapper;
         }
 
@@ -51,19 +53,15 @@ namespace Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var tweetDb = new Tweet
+            var createTweetCommand = new CreateTweetCommand
             {
                 UserName = username,
                 Text = tweet.Text,
             };
 
-            // todo: create a separate class, a kind of EventSender
-            //await _produser.ProduceAsync<Tweet>(Environment.GetEnvironmentVariable("KAFKA_NEW_TWEET_TOPIC"), tweetDb);
-            await _produser.ProduceAsync<Tweet>("tweet_topic", tweetDb);
+            await _handler.SendCommandAsync(createTweetCommand, cancellationToken);
 
-            await _messageRepository.CreateAsync(tweetDb, cancellationToken);
-
-            return CreatedAtAction(nameof(Add), _mapper.Map<TweetDto>(tweetDb));
+            return CreatedAtAction(nameof(Add), _mapper.Map<TweetDto>(createTweetCommand));
         }
 
         [HttpPut("{username}/update/{id}")]
