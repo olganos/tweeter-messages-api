@@ -15,17 +15,17 @@ namespace Infrastructure.Repositories
             _tweetsCollection = database.GetCollection<Tweet>(tweetCollectionName);
         }
 
-        public async Task<List<Tweet>> GetAllAsync(CancellationToken cancellationToken)
-        {
-            return await _tweetsCollection.Find(_ => true).ToListAsync(cancellationToken);
-        }
+        //public async Task<List<Tweet>> GetAllAsync(CancellationToken cancellationToken)
+        //{
+        //    return await _tweetsCollection.Find(_ => true).ToListAsync(cancellationToken);
+        //}
 
-        public async Task<List<Tweet>> GetByUsernameAsync(string username, CancellationToken cancellationToken)
-        {
-            FilterDefinition<Tweet> filter = Builders<Tweet>.Filter.Eq(p => p.UserName, username);
+        //public async Task<List<Tweet>> GetByUsernameAsync(string username, CancellationToken cancellationToken)
+        //{
+        //    FilterDefinition<Tweet> filter = Builders<Tweet>.Filter.Eq(p => p.UserName, username);
 
-            return await _tweetsCollection.Find(filter).ToListAsync(cancellationToken);
-        }
+        //    return await _tweetsCollection.Find(filter).ToListAsync(cancellationToken);
+        //}
 
         public async Task<Tweet> GetOneAsync(string userName, string id, CancellationToken cancellationToken)
         {
