@@ -1,5 +1,6 @@
 using Api.Controllers;
 using Api.Dto;
+using Api.Dto.Requests;
 using AutoMapper;
 using AutoMapperProfiles;
 using Core;
@@ -89,7 +90,7 @@ namespace UnitTests
                });
 
             var addResult = await _tweetsController.Add(
-                new TweetEditDto
+                new TweetEditRequest
                 {
                     Text = text
                 },
@@ -114,7 +115,7 @@ namespace UnitTests
             _tweetsController.ModelState.AddModelError("Text", "Not longer than 144 characters");
 
             var addResult = await _tweetsController.Add(
-                It.IsAny<TweetEditDto>(),
+                It.IsAny<TweetEditRequest>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>());
 
@@ -144,7 +145,7 @@ namespace UnitTests
             var text = "New message";
 
             var addResult = await _tweetsController.Update(
-                new TweetEditDto
+                new TweetEditRequest
                 {
                     Text = text
                 },
@@ -169,7 +170,7 @@ namespace UnitTests
             _tweetsController.ModelState.AddModelError("Text", "Not longer than 144 characters");
 
             var addResult = await _tweetsController.Update(
-                It.IsAny<TweetEditDto>(),
+                It.IsAny<TweetEditRequest>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>());
@@ -184,7 +185,7 @@ namespace UnitTests
             _mockedRepository.Setup(repo => repo.GetOneAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
 
             var addResult = await _tweetsController.Update(
-                It.IsAny<TweetEditDto>(),
+                It.IsAny<TweetEditRequest>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>());
@@ -240,7 +241,7 @@ namespace UnitTests
             _mockedRepository.Setup(repo => repo.GetOneAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
 
             var addResult = await _tweetsController.Reply(
-                It.IsAny<TweetEditDto>(),
+                It.IsAny<TweetEditRequest>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>());
@@ -255,7 +256,7 @@ namespace UnitTests
             _tweetsController.ModelState.AddModelError("Text", "Not longer than 144 characters");
 
             var addResult = await _tweetsController.Reply(
-                It.IsAny<TweetEditDto>(),
+                It.IsAny<TweetEditRequest>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>());
@@ -275,7 +276,7 @@ namespace UnitTests
             _mockedRepository.Setup(repo => repo.EditAsync(It.IsAny<Tweet>(), It.IsAny<CancellationToken>()));
 
             var addResult = await _tweetsController.Reply(
-                new TweetEditDto(),
+                new TweetEditRequest(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>());

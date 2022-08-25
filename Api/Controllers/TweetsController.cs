@@ -1,4 +1,6 @@
 ﻿using Api.Dto;
+using Api.Dto.Requests;
+using Api.Dto.Responses;
 using AutoMapper;
 using Core;
 using Core.Commands;
@@ -23,8 +25,8 @@ namespace Api.Controllers
         }
 
         [HttpPost("{username}/add")]
-        public async Task<ActionResult<TweetDto>> Add(
-            [FromBody] TweetEditDto tweet,
+        public async Task<ActionResult<TweetCreateResponse>> Add(
+            [FromBody] TweetCreateRequest tweet,
             string username,
             CancellationToken cancellationToken)
         {
@@ -43,12 +45,12 @@ namespace Api.Controllers
 
             await _handler.SendCommandAsync(createTweetCommand, cancellationToken);
 
-            return CreatedAtAction(nameof(Add), _mapper.Map<TweetDto>(createTweetCommand));
+            return CreatedAtAction(nameof(Add), _mapper.Map<TweetCreateResponse>(createTweetCommand));
         }
 
         [HttpPut("{username}/update/{id}")]
-        public async Task<ActionResult<TweetDto>> Update(
-            [FromBody] TweetEditDto tweet,
+        public async Task<ActionResult> Update(
+            [FromBody] TweetEditRequest tweet,
             string username,
             string id,
             CancellationToken cancellationToken)
@@ -75,7 +77,7 @@ namespace Api.Controllers
                 return NotFound();
             }
 
-            return _mapper.Map<TweetDto>(updateTweetCommand);
+            return Ok();
         }
 
         [HttpDelete("{username}/delete/{id}")]
@@ -101,8 +103,8 @@ namespace Api.Controllers
         }
 
         [HttpPost("{username}/reply/{id}")]
-        public async Task<ActionResult<TweetDto>> Reply(
-            [FromBody] TweetEditDto tweet,
+        public async Task<ActionResult<AddReplyResponse>> Reply(
+            [FromBody] AddReplyRequest reply,
             string username,
             string id,
             CancellationToken cancellationToken)
@@ -116,7 +118,7 @@ namespace Api.Controllers
             var addReplyCommand = new AddReplyCommand
             {
                 UserName = username,
-                Text = tweet.Text,
+                Text = reply.Text,
                 TweetId = id,
                 Created = DateTimeOffset.Now
             };
@@ -130,9 +132,7 @@ namespace Api.Controllers
                 return NotFound();
             }
 
-            // todo: not sure that its ok to return the whole tweet
-            // because it coul be really huge
-            return CreatedAtAction(nameof(Reply), _mapper.Map<TweetDto>(addReplyCommand));
+            return CreatedAtAction(nameof(Reply), _mapper.Map<AddReplyResponse>(addReplyCommand));
         }
     }
 }
