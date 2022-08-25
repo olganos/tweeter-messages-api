@@ -27,9 +27,9 @@ namespace Infrastructure.Handlers
 
         public async Task SendCommandAsync(AddReplyCommand command, CancellationToken cancellationToken)
         {
-            var tweetDb = await _messageRepository.GetOneAsync(command.TweetId, cancellationToken);
+            var tweetDb = await _messageRepository.TweetExistsAsync(command.TweetId, cancellationToken);
 
-            if (tweetDb == null)
+            if (!tweetDb)
             {
                 throw new TweetNotFoundExeption("Tweet not found");
             }
@@ -53,9 +53,9 @@ namespace Infrastructure.Handlers
 
         public async Task SendCommandAsync(DeleteTweetCommand command, CancellationToken cancellationToken)
         {
-            var tweetDb = await _messageRepository.GetOneAsync(command.TweetId, cancellationToken);
+            var tweetDb = await _messageRepository.TweetExistsAsync(command.UserName, command.TweetId, cancellationToken);
 
-            if (tweetDb == null)
+            if (!tweetDb)
             {
                 throw new TweetNotFoundExeption("Tweet not found");
             }

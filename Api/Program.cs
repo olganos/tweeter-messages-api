@@ -13,7 +13,9 @@ builder.Services.AddSingleton<IMessageRepository>(sp => new MessageRepository(
     Environment.GetEnvironmentVariable("DB_NAME")
         ?? builder.Configuration.GetValue<string>("MongoDbSettings:DbName"),
     Environment.GetEnvironmentVariable("DB_TWEET_COLLECTION")
-        ?? builder.Configuration.GetValue<string>("MongoDbSettings:DbTweetCollectionName")
+        ?? builder.Configuration.GetValue<string>("MongoDbSettings:DbTweetCollectionName"),
+    Environment.GetEnvironmentVariable("DB_REPLY_COLLECTION")
+        ?? builder.Configuration.GetValue<string>("MongoDbSettings:DbReplyCollectionName")
 ));
 
 builder.Services.AddScoped<ITweetProducer>(sp => new KafkaProduser(new ProducerConfig

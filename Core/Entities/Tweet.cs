@@ -8,9 +8,17 @@ namespace Core.Entities
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
+
+        [BsonRequired]
         public string Text { get; set; }
+
+        [BsonRequired]
         public string UserName { get; set; }
 
-        public List<Reply> Replies { get; set; }
+        [BsonRepresentation(BsonType.DateTime)]
+        [BsonRequired]
+        public DateTimeOffset Created { get; set; }
+
+        public int Likes { get; set; }
     }
 }

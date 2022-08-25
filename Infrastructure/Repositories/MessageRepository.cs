@@ -7,25 +7,16 @@ namespace Infrastructure.Repositories
     public class MessageRepository : IMessageRepository
     {
         private readonly IMongoCollection<Tweet> _tweetsCollection;
+        private readonly IMongoCollection<Reply> _repliesCollection;
 
-        public MessageRepository(string connectionString, string databaseName, string tweetCollectionName)
+        public MessageRepository(string connectionString, string databaseName,
+            string tweetCollectionName, string replyCollectionName)
         {
             var client = new MongoClient(connectionString);
             var database = client.GetDatabase(databaseName);
             _tweetsCollection = database.GetCollection<Tweet>(tweetCollectionName);
+            _repliesCollection = database.GetCollection<Reply>(replyCollectionName);
         }
-
-        //public async Task<List<Tweet>> GetAllAsync(CancellationToken cancellationToken)
-        //{
-        //    return await _tweetsCollection.Find(_ => true).ToListAsync(cancellationToken);
-        //}
-
-        //public async Task<List<Tweet>> GetByUsernameAsync(string username, CancellationToken cancellationToken)
-        //{
-        //    FilterDefinition<Tweet> filter = Builders<Tweet>.Filter.Eq(p => p.UserName, username);
-
-        //    return await _tweetsCollection.Find(filter).ToListAsync(cancellationToken);
-        //}
 
         public async Task<Tweet> GetOneAsync(string userName, string id, CancellationToken cancellationToken)
         {
@@ -33,12 +24,16 @@ namespace Infrastructure.Repositories
                 .Find(p => p.Id == id && p.UserName == userName)
                 .FirstOrDefaultAsync(cancellationToken);
         }
-        public async Task<Tweet> GetOneAsync(string id, CancellationToken cancellationToken)
-        {
-            return await _tweetsCollection
+
+        public async Task<bool> TweetExistsAsync(string id, CancellationToken cancellationToken) =>
+            await _tweetsCollection
                 .Find(p => p.Id == id)
-                .FirstOrDefaultAsync(cancellationToken);
-        }
+                .AnyAsync(cancellationToken);
+
+        public async Task<bool> TweetExistsAsync(string userName, string id, CancellationToken cancellationToken) =>
+            await _tweetsCollection
+                .Find(p => p.Id == id && p.UserName == userName)
+                .AnyAsync(cancellationToken);
 
         public async Task CreateAsync(Tweet tweet, CancellationToken cancellationToken) =>
             await _tweetsCollection.InsertOneAsync(
@@ -53,7 +48,10 @@ namespace Infrastructure.Repositories
                     replacement: tweet,
                     cancellationToken: cancellationToken);
 
-        public async Task DeleteAsync(string userName, string id, CancellationToken cancellationToken) =>
+        public async Task DeleteAsync(string userName, string id, CancellationToken cancellationToken)
+        {
+            await _repliesCollection.DeleteManyAsync(p => p.TweetId == id, cancellationToken);
             await _tweetsCollection.DeleteOneAsync(p => p.Id == id && p.UserName == userName, cancellationToken);
+        }
     }
 }

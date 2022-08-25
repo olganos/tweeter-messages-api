@@ -38,6 +38,7 @@ namespace Api.Controllers
             {
                 UserName = username,
                 Text = tweet.Text,
+                Created = DateTimeOffset.Now
             };
 
             await _handler.SendCommandAsync(createTweetCommand, cancellationToken);
@@ -116,7 +117,8 @@ namespace Api.Controllers
             {
                 UserName = username,
                 Text = tweet.Text,
-                TweetId = id
+                TweetId = id,
+                Created = DateTimeOffset.Now
             };
 
             try
