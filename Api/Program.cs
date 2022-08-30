@@ -5,7 +5,7 @@ using Infrastructure.Producers;
 using Infrastructure.Repositories;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Annotations;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,7 +43,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
-        options.Authority = "http://localhost:8003/";
+        options.Authority = "https://localhost:8003/";
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = false,
@@ -102,9 +102,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+app.UseHttpMetrics();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapMetrics();
 
 app.Run();
