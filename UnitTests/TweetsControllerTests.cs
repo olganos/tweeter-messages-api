@@ -5,7 +5,6 @@ using AutoMapper;
 using AutoMapperProfiles;
 using Core;
 using Core.Entities;
-using DataLayer;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 

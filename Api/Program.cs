@@ -7,14 +7,27 @@ using Microsoft.AspNetCore.Diagnostics;
 using Serilog;
 using System.Text.Json;
 using static System.Net.Mime.MediaTypeNames;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Prometheus;
 
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Warning()
-    .WriteTo.Http(
-        Environment.GetEnvironmentVariable("LOGSTASH_URI")
-            ?? throw new ArgumentNullException("Logstash URI is needed"),
-        null)
-    .CreateLogger();
+var logConfig = new LoggerConfiguration()
+    .MinimumLevel.Warning();
+
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("LOGSTASH_URI")))
+{
+    logConfig
+        .WriteTo
+        .Http(Environment.GetEnvironmentVariable("LOGSTASH_URI"), null);
+}
+else
+{
+    logConfig
+        .WriteTo
+        .Console();
+}
+
+Log.Logger = logConfig.CreateLogger();
 
 try
 {
@@ -44,6 +57,61 @@ try
         Environment.GetEnvironmentVariable("KAFKA_ADD_REPLY_TOPIC_NAME")
             ?? builder.Configuration.GetValue<string>("KafkaSettings:AddRealyTopicName")
     ));
+
+    builder.Services.AddControllers();
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+
+    builder.Services.AddAuthentication("Bearer")
+        .AddJwtBearer("Bearer", options =>
+        {
+            options.Authority = Environment.GetEnvironmentVariable("IDENTITY_SERVER_URI")
+                ?? builder.Configuration.GetValue<string>("IdentityServer:Uri");
+
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+            };
+        });
+
+    builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy("ApiScope", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim("scope", "tweeter-api");
+        });
+    });
+
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.EnableAnnotations();
+        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Description = @"Enter 'Bearer [space] and your token",
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer"
+        });
+
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                },
+                Scheme="oauth2",
+                Name="Bearer",
+                In=ParameterLocation.Header
+            },
+            new List<string>()
+        }
+        });
+    });
 
     builder.Services.AddScoped<ITweetCommandHandler, TweetCommandHandler>();
 
@@ -93,9 +161,16 @@ try
 
     app.UseHttpsRedirection();
 
+    app.UseRouting();
+    app.UseHttpMetrics();
+
+    app.UseAuthentication();
     app.UseAuthorization();
 
-    app.MapControllers();
+    app.MapControllers()
+        .RequireAuthorization("ApiScope"); ;
+
+    app.MapMetrics();
 
     app.Run();
 }

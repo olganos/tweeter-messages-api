@@ -5,12 +5,14 @@ using AutoMapper;
 using Core;
 using Core.Commands;
 using Infrastructure.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
 {
     [Route("api/v1.0/tweets")]
     [ApiController]
+    [Authorize]
     public class TweetsController : ControllerBase
     {
         private readonly ITweetCommandHandler _handler;
