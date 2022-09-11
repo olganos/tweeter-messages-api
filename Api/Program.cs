@@ -43,7 +43,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
-        options.Authority = "https://localhost:8003/";
+        options.Authority = Environment.GetEnvironmentVariable("IDENTITY_SERVER_URI")
+            ?? builder.Configuration.GetValue<string>("IdentityServer:Uri");
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = false,
@@ -55,7 +57,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ApiScope", policy =>
     {
         policy.RequireAuthenticatedUser();
-        policy.RequireClaim("scope", "tweeter");
+        policy.RequireClaim("scope", "tweeter-api");
     });
 });
 
@@ -64,7 +66,7 @@ builder.Services.AddSwaggerGen(c =>
     c.EnableAnnotations();
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = @"Enter 'Bearer' [space] and your token",
+        Description = @"Enter 'Bearer [space] and your token",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -108,7 +110,8 @@ app.UseHttpMetrics();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllers()
+    .RequireAuthorization("ApiScope"); ;
 
 app.MapMetrics();
 
