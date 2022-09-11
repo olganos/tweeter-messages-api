@@ -115,11 +115,6 @@ try
 
     builder.Services.AddScoped<ITweetCommandHandler, TweetCommandHandler>();
 
-    builder.Services.AddControllers();
-    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
-
     builder.Services.AddAutoMapper(typeof(Program));
 
     var app = builder.Build();
@@ -168,7 +163,7 @@ try
     app.UseAuthorization();
 
     app.MapControllers()
-        .RequireAuthorization("ApiScope"); ;
+        .RequireAuthorization("ApiScope");
 
     app.MapMetrics();
 
