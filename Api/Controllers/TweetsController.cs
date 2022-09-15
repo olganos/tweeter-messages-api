@@ -42,6 +42,7 @@ namespace Api.Controllers
             {
                 UserName = username,
                 Text = tweet.Text,
+                Tag = tweet.Tag,
                 Created = DateTimeOffset.Now
             };
 
@@ -121,6 +122,7 @@ namespace Api.Controllers
             {
                 UserName = username,
                 Text = reply.Text,
+                Tag = reply.Tag,
                 TweetId = id,
                 Created = DateTimeOffset.Now
             };
