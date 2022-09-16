@@ -12,6 +12,8 @@ namespace Core.Entities
         [BsonRequired]
         public string Text { get; set; }
 
+        public string Tag { get; set; }
+
         [BsonRequired]
         public string UserName { get; set; }
 

@@ -1,5 +1,6 @@
 ﻿using Core;
 using Core.Commands;
+using Core.Entities;
 using Infrastructure.Exceptions;
 
 namespace Infrastructure.Handlers
@@ -61,6 +62,24 @@ namespace Infrastructure.Handlers
             }
 
             await _messageRepository.DeleteAsync(command.UserName, command.TweetId, cancellationToken);
+        }
+
+        public async Task SendCommandAsync(LikeCommand command, CancellationToken cancellationToken)
+        {
+            var tweetDb = await _messageRepository.GetOneAsync(command.UserName, command.TweetId, cancellationToken);
+
+            if (tweetDb == null)
+            {
+                throw new TweetNotFoundExeption("Tweet not found");
+            }
+
+            var like = new Like
+            {
+                TweetId = command.TweetId,
+                UserName = command.UserName
+            };
+
+            await _messageRepository.LikeAsync(like, cancellationToken);
         }
     }
 }

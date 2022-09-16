@@ -138,5 +138,30 @@ namespace Api.Controllers
 
             return CreatedAtAction(nameof(Reply), _mapper.Map<AddReplyResponse>(addReplyCommand));
         }
+
+        [HttpPut("{username}/like/{id}")]
+        public async Task<ActionResult> Like(
+           string username,
+           string id,
+           CancellationToken cancellationToken)
+        {
+            // todo: check the user
+            var likeCommand = new LikeCommand
+            {
+                UserName = username,
+                TweetId = id
+            };
+
+            try
+            {
+                await _handler.SendCommandAsync(likeCommand, cancellationToken);
+            }
+            catch (TweetNotFoundExeption)
+            {
+                return NotFound();
+            }
+
+            return Ok();
+        }
     }
 }

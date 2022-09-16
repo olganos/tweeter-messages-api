@@ -10,5 +10,6 @@ namespace Core
         Task CreateAsync(Tweet tweet, CancellationToken cancellationToken);
         Task EditAsync(Tweet tweet, CancellationToken cancellationToken);
         Task DeleteAsync(string userName, string id, CancellationToken cancellationToken);
+        Task LikeAsync(Like like, CancellationToken cancellationToken);
     }
 }

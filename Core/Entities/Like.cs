@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Core.Entities
 {
-    public class Reply
+    public class Like
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -13,15 +13,6 @@ namespace Core.Entities
         public string TweetId { get; set; }
 
         [BsonRequired]
-        public string Text { get; set; }
-
-        public string Tag { get; set; }
-
-        [BsonRequired]
         public string UserName { get; set; }
-
-        [BsonRepresentation(BsonType.DateTime)]
-        [BsonRequired]
-        public DateTimeOffset Created { get; set; }
     }
 }

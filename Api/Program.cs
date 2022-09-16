@@ -42,7 +42,9 @@ try
         Environment.GetEnvironmentVariable("DB_TWEET_COLLECTION")
             ?? builder.Configuration.GetValue<string>("MongoDbSettings:DbTweetCollectionName"),
         Environment.GetEnvironmentVariable("DB_REPLY_COLLECTION")
-            ?? builder.Configuration.GetValue<string>("MongoDbSettings:DbReplyCollectionName")
+            ?? builder.Configuration.GetValue<string>("MongoDbSettings:DbReplyCollectionName"),
+        Environment.GetEnvironmentVariable("DB_LIKE_COLLECTION")
+            ?? builder.Configuration.GetValue<string>("MongoDbSettings:DbLikeCollectionName")
     ));
 
     builder.Services.AddScoped<ITweetProducer>(sp => new KafkaProduser(new ProducerConfig
