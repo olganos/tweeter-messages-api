@@ -38,50 +38,6 @@ namespace UnitTests
             _tweetsController = new TweetsController(_mockedHandler.Object, mapper);
         }
 
-        //#region Test list methonds
-
-        //[Test]
-        //public async Task GetAll_RequestList_ReturnList()
-        //{
-        //    _mockedHandler.Setup(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()))
-        //       .ReturnsAsync(FullTweetsList);
-
-        //    var tweetsResult = await _tweetsController.All(It.IsAny<CancellationToken>());
-
-        //    Assert.That(tweetsResult, Has.Count.EqualTo(2));
-        //    Assert.That(tweetsResult, Is.TypeOf(typeof(List<TweetDto>)));
-        //}
-
-        //[Test]
-        //public async Task GetAll_RequestListByUserName_ReturnList()
-        //{
-        //    var userName = "userName1";
-
-        //    _mockedHandler.Setup(repo => repo.GetByUsernameAsync(userName, It.IsAny<CancellationToken>()))
-        //       .ReturnsAsync(FullTweetsList.Where(x => x.UserName == userName).ToList());
-
-        //    var tweetsResult = await _tweetsController.All(userName, It.IsAny<CancellationToken>());
-
-        //    Assert.That(tweetsResult, Has.Count.EqualTo(1));
-        //    Assert.That(tweetsResult, Is.TypeOf(typeof(List<TweetDto>)));
-        //}
-
-        //[Test]
-        //public async Task GetAll_RequestListByWrongUserName_ReturNothing()
-        //{
-        //    var userName = "userName3";
-
-        //    _mockedHandler.Setup(repo => repo.GetByUsernameAsync(userName, It.IsAny<CancellationToken>()))
-        //       .ReturnsAsync(FullTweetsList.Where(x => x.UserName == userName).ToList());
-
-        //    var tweetsResult = await _tweetsController.All(userName, It.IsAny<CancellationToken>());
-
-        //    Assert.That(tweetsResult, Is.Empty);
-        //    Assert.That(tweetsResult, Is.TypeOf(typeof(List<TweetDto>)));
-        //}
-
-        //#endregion
-
         #region Create tests
 
         [Test]
@@ -307,39 +263,5 @@ namespace UnitTests
         }
 
         #endregion
-
-        //private List<Tweet> FullTweetsList =>
-        //    new()
-        //    {
-        //        new Tweet
-        //        {
-        //            Id = "61a6058e6c43f32854e51f52",
-        //            Text = "new message",
-        //            UserName = "userName1"
-        //        },
-        //        new Tweet
-        //        {
-        //            Id = "62f55d7d3925e583c4cc737a",
-        //            Text = "another new message",
-        //            UserName = "userName2"
-        //        },
-        //    };
-
-        //private List<TweetDto> FullTweetsDtoList =>
-        //    new()
-        //    {
-        //        new TweetDto
-        //        {
-        //            Id = "61a6058e6c43f32854e51f52",
-        //            Text = "new message",
-        //            UserName = "userName1"
-        //        },
-        //        new TweetDto
-        //        {
-        //            Id = "62f55d7d3925e583c4cc737a",
-        //            Text = "another new message",
-        //            UserName = "userName2"
-        //        },
-        //    };
     }
 }
