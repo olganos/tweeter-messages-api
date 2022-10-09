@@ -10,28 +10,27 @@ using static System.Net.Mime.MediaTypeNames;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Prometheus;
-
-var logConfig = new LoggerConfiguration()
-    .MinimumLevel.Warning();
-
-if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("LOGSTASH_URI")))
-{
-    logConfig
-        .WriteTo
-        .Http(Environment.GetEnvironmentVariable("LOGSTASH_URI"), null);
-}
-else
-{
-    logConfig
-        .WriteTo
-        .Console();
-}
-
-Log.Logger = logConfig.CreateLogger();
+using Serilog.Sinks.Elasticsearch;
 
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+
+    builder.Host.UseSerilog((context, logConfiguration) =>
+    {
+        logConfiguration
+            .Enrich.FromLogContext()
+            .Enrich.WithMachineName()
+            .WriteTo.Console()
+            .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(Environment.GetEnvironmentVariable("ELASTICSEARCH_URI")
+                ?? context.Configuration["ElasticConfiguration:Uri"]))
+            {
+                IndexFormat = $"tweeter-write-api-logs",
+                AutoRegisterTemplate = true,
+                NumberOfShards = 2,
+                NumberOfReplicas = 1
+            }).Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName).ReadFrom.Configuration(context.Configuration);
+    });
 
     // Add services to the container.
     builder.Services.AddSingleton<IMessageRepository>(sp => new MessageRepository(
@@ -47,11 +46,25 @@ try
             ?? builder.Configuration.GetValue<string>("MongoDbSettings:DbLikeCollectionName")
     ));
 
-    builder.Services.AddScoped<ITweetProducer>(sp => new KafkaProduser(new ProducerConfig
-    {
-        BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_SERVER")
-            ?? builder.Configuration.GetValue<string>("KafkaSettings:BootstrapServers"),
-    }));
+    bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+
+    var kafkaProducerConfig = isDevelopment
+        ? new ProducerConfig
+        {
+            BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_SERVER")
+                ?? builder.Configuration.GetValue<string>("KafkaSettings:BootstrapServers"),
+        }
+        : new ProducerConfig
+        {
+            BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_SERVER")
+                ?? builder.Configuration.GetValue<string>("KafkaSettings:BootstrapServers"),
+            SaslUsername = builder.Configuration.GetValue<string>("KafkaSettings:Key"),
+            SaslPassword = builder.Configuration.GetValue<string>("KafkaSettings:Secret"),
+            SaslMechanism = SaslMechanism.Plain,
+            SecurityProtocol = SecurityProtocol.SaslSsl,
+        };
+
+    builder.Services.AddScoped<ITweetProducer>(sp => new KafkaProduser(kafkaProducerConfig));
 
     builder.Services.AddSingleton(new CommandHandlerConfig(
         Environment.GetEnvironmentVariable("KAFKA_CREATE_TWEET_TOPIC_NAME")
